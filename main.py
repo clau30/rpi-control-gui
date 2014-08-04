@@ -21,7 +21,7 @@ class MainWidget(QtGui.QMainWindow):
         self.connect(self.ui.buttonDrinks, QtCore.SIGNAL("clicked(bool)"), self.switchToUsers)
         # radio
         # users
-        self.connect(self.ui.buttonUser1, QtCore.SIGNAL("clicked(bool)"), self.handleUser1)
+        #self.connect(self.ui.buttonUser1, QtCore.SIGNAL("clicked(bool)"), self.handleUser1)
         # drinks
         self.connect(self.ui.buttonPay, QtCore.SIGNAL("clicked(bool)"), self.switchToPayment)
         # payment
@@ -133,15 +133,37 @@ class MainWidget(QtGui.QMainWindow):
         self.ui.stackedWidget.setCurrentIndex(2)
         self.ui.buttonBack.setEnabled(True)
 
-    def doStuff(self):
-        hlayout = QtGui.QHBoxLayout()
-        label = QtGui.QLabel("test")
-        button = QtGui.QPushButton()
-        lcd = QtGui.QLCDNumber()
-        hlayout.addWidget(label)
-        hlayout.addWidget(button)
-        hlayout.addWidget(lcd)
-        self.ui.verticalLayout.insertLayout(2, hlayout)
+    def addDrinksToUi(self, drinks_list):
+        font = QtGui.QFont("Sans Serif", 12);
+        for el in drinks_list:
+            hlayout = QtGui.QHBoxLayout()
+            label = QtGui.QLabel(el[1])
+            label.setFont(font);
+            button = QtGui.QPushButton("+1")
+            lcd = QtGui.QLCDNumber()
+            hlayout.addWidget(label)
+            hlayout.addWidget(lcd)
+            hlayout.addWidget(button)
+            self.ui.verticalLayout.addLayout(hlayout)    
+    
+    def addUsersToUi(self, users_list):
+        signalMapper = QtCore.QSignalMapper();
+        row = 0
+        col = 0
+        for el in users_list:
+            button = QtGui.QPushButton(el[1])
+            button.setMinimumSize(85, 50);
+            button.setMaximumSize(85, 50);
+            self.ui.gridLayout_2.addWidget(button, row, col)
+            signalMapper.setMapping(button, el[0]);
+            button.clicked.connect(signalMapper.map)
+            #self.connect(button, QtCore.SIGNAL("clicked()"), signalMapper, QtCore.SLOT("map()"));
+            col += 1
+            if col >= 3:
+                row += 1
+                col = 0
+        #self.connect(signalMapper, QtCore.SIGNAL("mapped(const QString &)"), this, QtCore.SIGNAL("clicked(const QString &"))
+        #signalMapper.mapped.connect(self.ui.pageUsers.clicked)
 
 if __name__ == '__main__':
     import sys
@@ -152,12 +174,13 @@ if __name__ == '__main__':
     if not db.connect():
         sys.exit(1)
     db.createTables()
-    db.getUsers()
-    db.getDrinks()
+    users_list = db.getUsers()
+    drinks_list = db.getDrinks()
 
     mainwidget = MainWidget()
     mainwidget.show()
 
-    mainwidget.doStuff()
+    mainwidget.addDrinksToUi(drinks_list)
+    mainwidget.addUsersToUi(users_list)
 
     sys.exit(app.exec_())
