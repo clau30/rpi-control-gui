@@ -56,7 +56,7 @@
         <enum>QFrame::Raised</enum>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="pageMain">
         <widget class="QWidget" name="gridLayoutWidget">

@@ -12,6 +12,7 @@ class MainWidget(QtGui.QMainWindow):
         #uic.loadUi(os.path.dirname(os.path.realpath(__file__))+'/mainwindow.ui', self)
         # Set up the user interface from Designer.
         self.ui = Ui_MainWindow()
+        self.ui.pageUsers = pageUsers(self)
         self.ui.setupUi(self)
         self.ui.stackedWidget.setCurrentIndex(0)
 
@@ -147,15 +148,17 @@ class MainWidget(QtGui.QMainWindow):
             self.ui.verticalLayout.addLayout(hlayout)    
     
     def addUsersToUi(self, users_list):
-        signalMapper = QtCore.QSignalMapper();
+        # with QSignalMapper, we want to map all buttons with the users, which are added dynamically,
+        # to a single slot which receives the signal (with a parameter).
+        signalMapper = QtCore.QSignalMapper()
         row = 0
         col = 0
-        for el in users_list:
-            button = QtGui.QPushButton(el[1])
-            button.setMinimumSize(85, 50);
-            button.setMaximumSize(85, 50);
+        for user in users_list:
+            button = QtGui.QPushButton(user[1])
+            button.setMinimumSize(85, 50)
+            button.setMaximumSize(85, 50)
             self.ui.gridLayout_2.addWidget(button, row, col)
-            signalMapper.setMapping(button, el[0]);
+            signalMapper.setMapping(button, user[0])
             button.clicked.connect(signalMapper.map)
             #self.connect(button, QtCore.SIGNAL("clicked()"), signalMapper, QtCore.SLOT("map()"));
             col += 1
@@ -165,11 +168,22 @@ class MainWidget(QtGui.QMainWindow):
         #self.connect(signalMapper, QtCore.SIGNAL("mapped(const QString &)"), this, QtCore.SIGNAL("clicked(const QString &"))
         #signalMapper.mapped.connect(self.ui.pageUsers.clicked)
 
+# see https://wiki.python.org/moin/PyQt/Using%20a%20signal%20mapper        
+# QSignalMapper needs the constructor reimplemented
+class pageUsers(QtGui.QWidget):
+    def __init__(self, parent=None, flags = 0):
+        super(pageUsers, self).__init__(parent)
+        signalMapper = QtCore.QSignalMapper()
+        #signalMapper.mapped.connect(self.intMapped)
+        self.connect(signalMapper, QtCore.SIGNAL("mapped(int)"), self.intMapped)
+        print "success"
+        
 if __name__ == '__main__':
     import sys
 
     app = QtGui.QApplication(sys.argv)
 
+    # NOTE: start the script (startx via .xinitrc) from the folder where the database file is, else the DB won't load
     db = RpiControlDB()
     if not db.connect():
         sys.exit(1)
